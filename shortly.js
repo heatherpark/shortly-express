@@ -22,7 +22,7 @@ app.use(bodyParser.json());
 // Parse forms (signup/login)
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
-app.use(session({secret: 'cookie', resave: true}));
+app.use(session({secret: 'cookie', resave: false, saveUninitialized: true}));
 
 function checkUser(req, res, next) {
   if (req.session.username) {
@@ -161,6 +161,7 @@ function(req, res) {
       console.log('getting error');
     } else {
       console.log('not getting error');
+      res.redirect('/login');
     }
   });
 });
