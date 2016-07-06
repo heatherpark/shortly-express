@@ -2,6 +2,7 @@ var express = require('express');
 var util = require('./lib/utility');
 var partials = require('express-partials');
 var bodyParser = require('body-parser');
+var bcrypt = require('bcrypt-nodejs');
 
 
 var db = require('./app/config');
@@ -135,16 +136,33 @@ function(req, res) {
   res.render('login');
 });
 
-
+// Load hash from your password DB.
+// bcrypt.compare(myPlaintextPassword, hash, function(err, res) {
+//     // res == true
+// });
 app.post('/login',
 function(req, res) {
   console.log('username: ' + req.body.username);
   new User({username: req.body.username}).fetch().then(function(found) {
     if (found) {
-      req.session.regenerate(function(){
-        req.session.username = req.body.username;
-        console.log("found username");
-        res.redirect('/');
+      console.log("object's password is: ", found.get("password"));
+      //match password with hash
+      bcrypt.compare(req.body.password, found.get("password"), function(err, matched){
+        console.log(matched);
+        if(err){
+        //else redirect to login
+          return res.redirect('/login');
+        }
+        //if true, regenerate
+        if(matched){
+          req.session.regenerate(function(){
+            req.session.username = req.body.username;
+            console.log("found username");
+            return res.redirect('/');
+          });
+        } else {
+          return res.redirect('/login');
+        }
       });
     } else {
       console.log("username not found");
